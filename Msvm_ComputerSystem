@@ -1,0 +1,84 @@
+<?php
+
+class Msvm_ComputerSystem extends WmiBaseClass
+{
+    public 	string	$InstanceID;
+    public 	string	$Caption;
+    public 	string	$Description;
+    public 	string	$ElementName;
+    public 	WmiDateTime	$InstallDate;
+    public 	array	$OperationalStatus;
+    public 	array	$StatusDescriptions;
+    public 	string	$Status;
+    public 	int	    $HealthState;
+    public 	string	$CommunicationStatus;
+    public 	string	$DetailedStatus;
+    public 	string	$OperatingStatus;
+    public 	string	$PrimaryStatus;
+    public 	VM_EnabledState $EnabledState;
+    public 	string	$OtherEnabledState;
+    public 	int	    $RequestedState;
+    public 	int	    $EnabledDefault;
+    public 	WmiDateTime	$TimeOfLastStateChange;
+    public 	array	$AvailableRequestedStates;
+    public 	string	$TransitioningToState;
+    public 	string	$CreationClassName;
+    public 	string	$Name;
+    public 	string	$PrimaryOwnerName;
+    public 	string	$PrimaryOwnerContact;
+    public 	array	$Roles;
+    public 	string	$NameFormat;
+    public 	array	$OtherIdentifyingInfo;
+    public 	array	$IdentifyingDescriptions;
+    public 	array	$Dedicated;
+    public 	array	$OtherDedicatedDescriptions;
+    public 	int	    $ResetCapability;
+    public 	array	$PowerManagementCapabilities;
+    public 	string	$OnTimeInMilliseconds;
+    public 	int	    $ProcessID;
+    public 	WmiDateTime	$TimeOfLastConfigurationChange;
+    public 	int	    $NumberOfNumaNodes;
+    public 	VM_ReplicationState	    $ReplicationState;
+    public 	VM_ReplicationHealth    $ReplicationHealth;
+    public 	VM_ReplicationMode   $ReplicationMode;
+    public 	int	    $FailedOverReplicationType;
+    public 	int	    $LastReplicationType;
+    public 	WmiDateTime	$LastApplicationConsistentReplicationTime;
+    public 	WmiDateTime	$LastReplicationTime;
+    public 	WmiDateTime	$LastSuccessfulBackupTime;
+    public 	int	    $EnhancedSessionModeState;
+
+
+    /**
+     * SwBemObjectSet for Direct function utilization
+     * @param $ObjectSet
+     * @throws Exception
+     */
+    public function __construct($ObjectSet = null)
+    {
+        parent::__construct($ObjectSet);
+    }
+
+    /**
+     * @param VM_RequestedState $requestedState
+     * @return string|bool
+     */
+    public function RequestStateChange(VM_RequestedState $requestedState):string|bool
+    {
+        if ($this->is_not_COM)
+            return false;
+        $InParameters = $this->ObjectSet->Methods_->Item('RequestStateChange',0)->InParameters->SpawnInstance_();
+        $InParameters->Properties_->Item('RequestedState', 0)->Value = $requestedState->value;
+        $outParams = $this->ObjectSet->ExecMethod_('RequestStateChange', $InParameters);
+        return $this->ParseOutParams($outParams);
+    }
+
+    public static function Create(mixed $ObjectSet = null):?self {
+        return empty($ObjectSet) ? null : new self($ObjectSet);
+    }
+
+
+
+
+
+};
