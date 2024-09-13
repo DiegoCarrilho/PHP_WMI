@@ -17,22 +17,22 @@ class Msvm_VirtualSystemManagementService extends WmiBaseServiceClass
 
     /**
      * Set ip of a Virtual Machine
-     * @param ?Msvm_ComputerSystem $VMObject
+     * @param ?Msvm_ComputerSystem $ComputerSystem
      * @param Msvm_GuestNetworkAdapterConfiguration $NetworkAdapterConfiguration
      * @return string|bool
      */
-    public function SetGuestNetworkAdapterConfiguration(?Msvm_ComputerSystem $VMObject,Msvm_GuestNetworkAdapterConfiguration $NetworkAdapterConfiguration):string|bool
+    public function SetGuestNetworkAdapterConfiguration(?Msvm_ComputerSystem $ComputerSystem,Msvm_GuestNetworkAdapterConfiguration $NetworkAdapterConfiguration):string|bool
     {
-        if (is_null($VMObject))
+        if (is_null($ComputerSystem))
             return false;
 
 
-        $this->ConnectWMI($VMObject->Path_->Server);
+        $this->ConnectWMI($ComputerSystem->Path_->Server);
 
-        $netAdapterQuery    = sprintf("SELECT * FROM Msvm_GuestNetworkAdapterConfiguration WHERE InstanceID LIKE '%%%s%%'",$VMObject->Name);
+        $netAdapterQuery    = sprintf("SELECT * FROM Msvm_GuestNetworkAdapterConfiguration WHERE InstanceID LIKE '%%%s%%'",$ComputerSystem->Name);
         $netAdapterEQ         = $this->wmiConnection->ExecQuery($netAdapterQuery);
         if ($netAdapterEQ->Count != 1)
-            return sprintf('Failed to load VM Adapter: (%s)',$VMObject->Name);
+            return sprintf('Failed to load VM Adapter: (%s)',$ComputerSystem->Name);
 
         $netAdapter         = $netAdapterEQ->ItemIndex(0);
 
@@ -62,7 +62,7 @@ class Msvm_VirtualSystemManagementService extends WmiBaseServiceClass
         }
 
         $inParameters = $this->Service->Methods_->Item('SetGuestNetworkAdapterConfiguration')->InParameters->SpawnInstance_();
-        $inParameters->ComputerSystem = $VMObject->ObjectSet->Path_->Path;
+        $inParameters->ComputerSystem = $ComputerSystem->ObjectSet->Path_->Path;
         $inParameters->NetworkConfiguration = [$netAdapter->GetText_(1)];
 
         $outParams = $this->Service->ExecMethod_('SetGuestNetworkAdapterConfiguration', $inParameters,0,null);
@@ -72,16 +72,16 @@ class Msvm_VirtualSystemManagementService extends WmiBaseServiceClass
     }
 
     /**
-     * @param ?Msvm_ComputerSystem $VMObject
+     * @param ?Msvm_ComputerSystem $ComputerSystem
      * @return ?Msvm_GuestNetworkAdapterConfiguration
      */
-    public function GetGuestNetworkAdapterConfiguration(?Msvm_ComputerSystem $VMObject):?Msvm_GuestNetworkAdapterConfiguration
+    public function GetGuestNetworkAdapterConfiguration(?Msvm_ComputerSystem $ComputerSystem):?Msvm_GuestNetworkAdapterConfiguration
     {
-        if (is_null($VMObject))
+        if (is_null($ComputerSystem))
             return null;
-        $this->ConnectWMI($VMObject->Path_->Server);
+        $this->ConnectWMI($ComputerSystem->Path_->Server);
 
-        $netAdapterQuery    = sprintf("SELECT * FROM Msvm_GuestNetworkAdapterConfiguration WHERE InstanceID LIKE '%%%s%%'",$VMObject->Name);
+        $netAdapterQuery    = sprintf("SELECT * FROM Msvm_GuestNetworkAdapterConfiguration WHERE InstanceID LIKE '%%%s%%'",$ComputerSystem->Name);
         $netAdapterEQ         = $this->wmiConnection->ExecQuery($netAdapterQuery);
 
         if ($netAdapterEQ->Count != 1)
@@ -91,24 +91,24 @@ class Msvm_VirtualSystemManagementService extends WmiBaseServiceClass
     }
 
     /**
-     * @param ?Msvm_ComputerSystem $VMObject
+     * @param ?Msvm_ComputerSystem $ComputerSystem
      * @param string $VLAN_ID 0 to remove VLAN
      * @return string|bool
      */
-    public function SetVirtualMachineVLAN(?Msvm_ComputerSystem $VMObject,string $VLAN_ID = '0'):string|bool
+    public function SetVirtualMachineVLAN(?Msvm_ComputerSystem $ComputerSystem,string $VLAN_ID = '0'):string|bool
     {
-        if (is_null($VMObject))
+        if (is_null($ComputerSystem))
             return false;
-        $this->ConnectWMI($VMObject->Path_->Server);
+        $this->ConnectWMI($ComputerSystem->Path_->Server);
 
         $EthernetSwitchPortVlanSettingDataQuery = $this->wmiConnection->ExecQuery(
-            sprintf("SELECT * FROM Msvm_EthernetSwitchPortVlanSettingData WHERE InstanceID LIKE '%%%s%%'",$VMObject->Name));
+            sprintf("SELECT * FROM Msvm_EthernetSwitchPortVlanSettingData WHERE InstanceID LIKE '%%%s%%'",$ComputerSystem->Name));
 
         if (!($EthernetSwitchPortVlanSettingDataQuery->Count > 0))
         {
 
                 $syntheticAdapterPath = $this->wmiConnection->ExecQuery(
-                    sprintf("SELECT * FROM Msvm_EthernetPortAllocationSettingData WHERE InstanceID LIKE '%%%s%%'", $VMObject->Name))->ItemIndex(0);
+                    sprintf("SELECT * FROM Msvm_EthernetPortAllocationSettingData WHERE InstanceID LIKE '%%%s%%'", $ComputerSystem->Name))->ItemIndex(0);
 
                 $vlanSettingsData = $this->wmiConnection->Get("Msvm_EthernetSwitchPortVlanSettingData")->SpawnInstance_();
                 $vlanSettingsData->AccessVlanId = $VLAN_ID;
@@ -143,7 +143,7 @@ class Msvm_VirtualSystemManagementService extends WmiBaseServiceClass
             else
             {
                 $FeatureSettingDataQuery = $this->wmiConnection->ExecQuery(
-                    sprintf("SELECT * FROM Msvm_FeatureSettingData WHERE InstanceID LIKE '%%%s%%'",$VMObject->Name));
+                    sprintf("SELECT * FROM Msvm_FeatureSettingData WHERE InstanceID LIKE '%%%s%%'",$ComputerSystem->Name));
                 if ($FeatureSettingDataQuery->Count > 0)
                 {
                     $FeatureSettingData = $FeatureSettingDataQuery->ItemIndex(0);
